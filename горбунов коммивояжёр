@@ -1,0 +1,110 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
+using namespace std;
+
+// Структура для хранения координат города
+struct City {
+    double x, y;
+};
+
+// Функция для вычисления евклидова расстояния между двумя городами
+double distance(const City& a, const City& b) {
+    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+// Функция для вычисления общей длины маршрута
+double totalDistance(const vector<int>& tour, const vector<City>& cities) {
+    double total = 0.0;
+    for (size_t i = 0; i < tour.size(); ++i) {
+        int j = (i + 1) % tour.size();
+        total += distance(cities[tour[i]], cities[tour[j]]);
+    }
+    return total;
+}
+
+// Алгоритм 2-opt
+void twoOpt(vector<int>& tour, const vector<City>& cities) {
+    bool improvement = true;
+    while (improvement) {
+        improvement = false;
+        for (size_t i = 1; i < tour.size() - 1; ++i) {
+            for (size_t j = i + 1; j < tour.size(); ++j) {
+                double delta = -distance(cities[tour[i - 1]], cities[tour[i]]])
+                                -distance(cities[tour[j]], cities[tour[(j + 1) % tour.size()]]])
+                                +distance(cities[tour[i - 1]], cities[tour[j]]])
+                                +distance(cities[tour[i]], cities[tour[(j + 1) % tour.size()]]]);
+                if (delta < 0) {
+                    reverse(tour.begin() + i, tour.begin() + j + 1);
+                    improvement = true;
+                }
+            }
+        }
+    }
+}
+
+// Алгоритм 3-opt
+void threeOpt(vector<int>& tour, const vector<City>& cities) {
+    bool improvement = true;
+    while (improvement) {
+        improvement = false;
+        for (size_t i = 1; i < tour.size() - 2; ++i) {
+            for (size_t j = i + 1; j < tour.size() - 1; ++j) {
+                for (size_t k = j + 1; k < tour.size(); ++k) {
+                    double d1 = distance(cities[tour[i - 1]], cities[tour[i]]]);
+                    double d2 = distance(cities[tour[j - 1]], cities[tour[j]]]);
+                    double d3 = distance(cities[tour[k - 1]], cities[tour[k]]]);
+                    double d4 = distance(cities[tour[i - 1]], cities[tour[j - 1]]]);
+                    double d5 = distance(cities[tour[i]], cities[tour[k - 1]]]);
+                    double d6 = distance(cities[tour[j]], cities[tour[k]]]);
+
+                    double original = d1 + d2 + d3;
+                    double newDistance = d4 + d5 + d6;
+
+                    if (newDistance < original) {
+                        reverse(tour.begin() + i, tour.begin() + j);
+                        reverse(tour.begin() + j, tour.begin() + k);
+                        improvement = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    // Пример данных: координаты городов
+    vector<City> cities = {
+        {0, 0},
+        {1, 3},
+        {4, 3},
+        {6, 0},
+        {3, 2},
+        {2, 1}
+    };
+
+    // Начальный тур (просто порядок городов)
+    vector<int> tour(cities.size());
+    for (size_t i = 0; i < tour.size(); ++i) {
+        tour[i] = i;
+    }
+
+    // Вычисляем начальную длину маршрута
+    double initialDistance = totalDistance(tour, cities);
+    cout << "Initial distance: " << initialDistance << endl;
+
+    // Применяем 2-opt
+    twoOpt(tour, cities);
+    double twoOptDistance = totalDistance(tour, cities);
+    cout << "After 2-opt: " << twoOptDistance << endl;
+
+    // Применяем 3-opt
+    threeOpt(tour, cities);
+    double threeOptDistance = totalDistance(tour, cities);
+    cout << "After 3-opt: " << threeOptDistance << endl;
+
+    return 0;
+}
